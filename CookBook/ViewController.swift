@@ -5,8 +5,6 @@
 //  Created by Теона Магай on 03.07.2025.
 //
 
-// trying to commit v2
-
 import UIKit
 
 class ViewController: UIViewController {
