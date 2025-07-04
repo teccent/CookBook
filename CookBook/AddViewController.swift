@@ -11,20 +11,28 @@ class AddViewController: UIViewController {
     
     private let scrollView = UIScrollView()
     private let contentView = UIView()
+    
+    weak var delegate: AddFoodDelegate?
 
-    let nameField: UITextField = {
-        $0.placeholder = "Название"
-        $0.borderStyle = .roundedRect
+    let nameField: UITextView = {
+        $0.text = "Название"
+        $0.textColor = .lightGray
+        $0.font = UIFont.systemFont(ofSize: 16)
+        $0.layer.cornerRadius = 30
+        $0.backgroundColor = .cellBG
+        $0.clipsToBounds = true
+        $0.textContainerInset = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
         return $0
-    }(UITextField())
+    }(UITextView())
     
     let ingredientsField: UITextView = {
         $0.text = "Ингредиенты"
         $0.textColor = .lightGray
         $0.font = UIFont.systemFont(ofSize: 16)
-        $0.layer.borderColor = UIColor.systemGray.cgColor
-        $0.layer.borderWidth = 1
-        $0.layer.cornerRadius = 8
+        $0.layer.cornerRadius = 30
+        $0.backgroundColor = .cellBG
+        $0.clipsToBounds = true
+        $0.textContainerInset = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
         return $0
     }(UITextView())
     
@@ -32,15 +40,20 @@ class AddViewController: UIViewController {
         $0.text = "Рецепт"
         $0.textColor = .lightGray
         $0.font = UIFont.systemFont(ofSize: 16)
-        $0.layer.borderColor = UIColor.systemGray.cgColor
-        $0.layer.borderWidth = 1
-        $0.layer.cornerRadius = 8
+        $0.layer.cornerRadius = 30
+        $0.backgroundColor = .cellBG
+        $0.clipsToBounds = true
+        $0.textContainerInset = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
         return $0
     }(UITextView())
     
     let saveButton: UIButton = {
+        $0.translatesAutoresizingMaskIntoConstraints = false
+        $0.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        $0.backgroundColor = .btnBG
+        $0.layer.cornerRadius = 20
         $0.setTitle("Сохранить", for: .normal)
-        $0.setTitleColor(.systemBlue, for: .normal)
+        $0.setTitleColor(.white, for: .normal)
         return $0
     }(UIButton(type: .system))
     
@@ -49,6 +62,7 @@ class AddViewController: UIViewController {
         view.backgroundColor = .white
         title = "Добавить рецепт"
         
+        nameField.delegate = self
         ingredientsField.delegate = self
         recipeField.delegate = self
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
@@ -86,6 +100,7 @@ class AddViewController: UIViewController {
             nameField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
             nameField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             nameField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            nameField.heightAnchor.constraint(equalToConstant: 60),
             
             ingredientsField.topAnchor.constraint(equalTo: nameField.bottomAnchor, constant: 20),
             ingredientsField.leadingAnchor.constraint(equalTo: nameField.leadingAnchor),
@@ -99,18 +114,29 @@ class AddViewController: UIViewController {
             
             saveButton.topAnchor.constraint(equalTo: recipeField.bottomAnchor, constant: 30),
             saveButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            saveButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -40) // важно!
+            saveButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -40),
+            saveButton.widthAnchor.constraint(equalToConstant: 200)
+            // важно!
         ])
     }
     
     @objc func saveTapped() {
         view.endEditing(true)
-        print("Сохранить нажато")
+
+        let newFood = Food(
+            name: nameField.text ?? "",
+            ingredients: ingredientsField.text ?? "",
+            recipe: recipeField.text ?? "",
+            image: "fork.knife.circle" // или другое изображение
+        )
+
+        var saved = FoodStorage.shared.load()
+        saved.append(newFood)
+        FoodStorage.shared.save(saved)
+
+        navigationController?.popViewController(animated: true)
     }
-    
-    @objc func doneButtonAction() {
-        view.endEditing(true)
-    }
+
     
     // MARK: - Keyboard Handling
     
@@ -149,8 +175,14 @@ extension AddViewController: UITextViewDelegate {
                 textView.text = "Ингредиенты"
             } else if textView == recipeField {
                 textView.text = "Рецепт"
+            } else if textView == nameField {
+                textView.text = "Название"
             }
             textView.textColor = .lightGray
         }
     }
+}
+
+protocol AddFoodDelegate: AnyObject {
+    func didAddFood(_ food: Food)
 }

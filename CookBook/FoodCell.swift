@@ -11,6 +11,8 @@ class FoodCell: UITableViewCell{
     
     static let reuseID = "FoodCell"
     
+    var onButtonTap: (() -> Void)?
+    
    private var foodCellView: UIView = {
         $0.translatesAutoresizingMaskIntoConstraints = false
         $0.layer.cornerRadius = 30
@@ -21,9 +23,9 @@ class FoodCell: UITableViewCell{
     private var foodCellImage: UIImageView = {
         $0.translatesAutoresizingMaskIntoConstraints = false
         $0.layer.cornerRadius = 30
-        $0.heightAnchor.constraint(equalToConstant: 140).isActive = true
-        $0.contentMode = .scaleAspectFill
         $0.clipsToBounds = true
+        $0.contentMode = .scaleAspectFit
+        $0.tintColor = .systemOrange
         return $0
     }(UIImageView())
     
@@ -51,12 +53,15 @@ class FoodCell: UITableViewCell{
         foodCellView.addSubview(foodCellButton)
         
         setupConstraints()
+        
+        foodCellButton.addTarget(self, action: #selector(cellTapped), for: .touchUpInside)
     }
     
     func setupCell(food: Food) {
-        foodCellImage.image = UIImage(named: food.image)
+        foodCellImage.image = UIImage(systemName: food.image)
+        foodCellImage.tintColor = .systemOrange
         foodCellHeader.text = food.name
-        foodCellDescription.text = food.description
+        foodCellDescription.text = food.ingredients
     }
     
     private func setupConstraints() {
@@ -68,8 +73,9 @@ class FoodCell: UITableViewCell{
             foodCellView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -30),
             
             foodCellImage.topAnchor.constraint(equalTo: foodCellView.topAnchor, constant: 20),
-            foodCellImage.leadingAnchor.constraint(equalTo: foodCellView.leadingAnchor, constant: 20),
-            foodCellImage.trailingAnchor.constraint(equalTo: foodCellView.trailingAnchor, constant: -20),
+               foodCellImage.centerXAnchor.constraint(equalTo: foodCellView.centerXAnchor),  // по центру
+               foodCellImage.widthAnchor.constraint(equalToConstant: 140),                  // квадрат
+               foodCellImage.heightAnchor.constraint(equalTo: foodCellImage.widthAnchor),
             
             foodCellHeader.topAnchor.constraint(equalTo: foodCellImage.bottomAnchor, constant: 20),
             foodCellHeader.leadingAnchor.constraint(equalTo: foodCellView.leadingAnchor, constant: 36),
@@ -100,5 +106,10 @@ class FoodCell: UITableViewCell{
             return $0
         }(UILabel())
     }
+    
+    @objc private func cellTapped() {
+        onButtonTap?()
+    }
+    
     
 }

@@ -8,8 +8,10 @@
 import UIKit
 
 class ViewController: UIViewController {
-
-    let foods = Food.mockData()
+    
+    var foods: [Food] = []
+    
+    let storage = FoodStorage()
     
     lazy var tableView: UITableView = {
         $0.dataSource = self
@@ -22,13 +24,25 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        foods = storage.load()
+        
         view.addSubview(tableView)
         navigationItem.title = "Cook Book"
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addTapped))
+        
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+           super.viewWillAppear(animated)
+           foods = FoodStorage.shared.load()
+           tableView.reloadData()
+       }
+
+    
     @objc func addTapped() {
-        self.navigationController?.pushViewController(AddViewController(), animated: true)
+        let vc = AddViewController()
+        vc.delegate = self
+        navigationController?.pushViewController(AddViewController(), animated: true)
     }
 
 
@@ -46,10 +60,23 @@ extension ViewController: UITableViewDataSource {
             cell.setupCell(food: food)
             cell.selectionStyle = .none
             
+            cell.onButtonTap = { [weak self] in
+                let descriptionVC = DescriptionViewController()
+                descriptionVC.food = food
+                self?.navigationController?.pushViewController(descriptionVC, animated: true)
+            }
+            
             return cell
         }
         return UITableViewCell()
     }
     
-    
+}
+
+extension ViewController: AddFoodDelegate {
+    func didAddFood(_ food: Food) {
+        foods.append(food)
+        storage.save(foods)
+        tableView.reloadData()
+    }
 }
