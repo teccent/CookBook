@@ -41,7 +41,7 @@ class FoodCell: UITableViewCell{
     }(UIButton())
     
     private lazy var foodCellHeader = getLabel(font: UIFont.systemFont(ofSize: 20, weight: .bold))
-    private lazy var foodCellDescription = getLabel(font: UIFont.systemFont(ofSize: 16, weight: .medium))
+    private lazy var foodCellRecipe = getLabel(font: UIFont.systemFont(ofSize: 16, weight: .medium))
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -49,7 +49,7 @@ class FoodCell: UITableViewCell{
         contentView.addSubview(foodCellView)
         foodCellView.addSubview(foodCellImage)
         foodCellView.addSubview(foodCellHeader)
-        foodCellView.addSubview(foodCellDescription)
+        foodCellView.addSubview(foodCellRecipe)
         foodCellView.addSubview(foodCellButton)
         
         setupConstraints()
@@ -58,10 +58,24 @@ class FoodCell: UITableViewCell{
     }
     
     func setupCell(food: Food) {
-        foodCellImage.image = UIImage(systemName: food.image)
-        foodCellImage.tintColor = .systemOrange
+        if food.isSystemImage {
+            foodCellImage.image = UIImage(systemName: food.image)
+            foodCellImage.contentMode = .scaleAspectFit
+            foodCellImage.tintColor = .systemOrange
+        } else {
+            let imagePath = getDocumentsDirectory().appendingPathComponent(food.image).path
+            foodCellImage.image = UIImage(contentsOfFile: imagePath)
+            foodCellImage.contentMode = .scaleAspectFill
+        }
+
+        foodCellImage.layer.cornerRadius = 16
+        foodCellImage.clipsToBounds = true
         foodCellHeader.text = food.name
-        foodCellDescription.text = food.ingredients
+        foodCellRecipe.text = food.recipe
+    }
+    
+    private func getDocumentsDirectory() -> URL {
+        return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
     
     private func setupConstraints() {
@@ -81,11 +95,11 @@ class FoodCell: UITableViewCell{
             foodCellHeader.leadingAnchor.constraint(equalTo: foodCellView.leadingAnchor, constant: 36),
             foodCellHeader.trailingAnchor.constraint(equalTo: foodCellView.trailingAnchor, constant: -20),
             
-            foodCellDescription.topAnchor.constraint(equalTo: foodCellHeader.bottomAnchor, constant: 12),
-            foodCellDescription.leadingAnchor.constraint(equalTo: foodCellView.leadingAnchor, constant: 20),
-            foodCellDescription.trailingAnchor.constraint(equalTo: foodCellView.trailingAnchor, constant: -20),
+            foodCellRecipe.topAnchor.constraint(equalTo: foodCellHeader.bottomAnchor, constant: 12),
+            foodCellRecipe.leadingAnchor.constraint(equalTo: foodCellView.leadingAnchor, constant: 20),
+            foodCellRecipe.trailingAnchor.constraint(equalTo: foodCellView.trailingAnchor, constant: -20),
             
-            foodCellButton.topAnchor.constraint(equalTo: foodCellDescription.bottomAnchor, constant: 25),
+            foodCellButton.topAnchor.constraint(equalTo: foodCellRecipe.bottomAnchor, constant: 25),
             foodCellButton.leadingAnchor.constraint(equalTo: foodCellView.leadingAnchor, constant: 20),
             foodCellButton.trailingAnchor.constraint(equalTo: foodCellView.trailingAnchor, constant: -20),
             

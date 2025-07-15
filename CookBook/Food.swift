@@ -12,5 +12,5 @@ struct Food: Codable {
     let ingredients: String
     let recipe: String
     let image: String
-
+    let isSystemImage: Bool
 }
